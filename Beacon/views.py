@@ -137,13 +137,16 @@ def dec_match(request, listing):
         'name' : wrapper.name,
         'gender' : wrapper.gender,
         'tel' : wrapper.tel,
-        'id' : listing.id
+        'id' : listing.id,
+        'dist' : 0,
     }
     return HttpResponse(template.render(context))
 
 def match_decline(request, pk):
     user = request.user
-    s = user.listing_set.exclude(id=pk).all()
+    listing = Listing.objects.get(id=pk)
+    user2 = listing.poster
+    s = user.listing_set.exclude(poster=user2).all()
     return dec_match(request, s[0])
 
 def distance(loc1, loc2):
