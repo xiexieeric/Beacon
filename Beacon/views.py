@@ -118,8 +118,15 @@ def match(request, tup):
 @login_required
 def match_accept(request, pk):
     listing = Listing.objects.get(id=pk)
+    user = request.user
+    w1 = UserWrapper.objects.get(user=user)
     wrapper = UserWrapper.objects.get(user=listing.poster)
     listing.delete()
+    send_mail("Hey",
+              "We found a Beacon for you!" + '\n' +
+              w1.name+ '\n' +
+              w1.tel +'\n',
+              'lokahi.group9.test@gmail.com', [wrapper.user.email], fail_silently=False, )
     context = {
         'name': wrapper.name,
         'gender': wrapper.gender,
@@ -147,7 +154,11 @@ def match_decline(request, pk):
     listing = Listing.objects.get(id=pk)
     user2 = listing.poster
     s = user.listing_set.exclude(poster=user2).all()
-    return dec_match(request, s[0])
+    if len(s) != 0:
+        return dec_match(request, s[0])
+    else:
+        template = loader.get_template('thank-you.html')
+        return HttpResponse(template.render())
 
 def distance(loc1, loc2):
     # approximate radius of earth in km
